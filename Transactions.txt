@@ -1,0 +1,253 @@
+package taskAssigned;
+
+import java.util.Random;
+import java.util.Scanner;
+
+public class bankopen {
+    public static BankAccount[] accounts = new BankAccount[100]; // Array to store accounts
+    public static int accountCount = 0;
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        while(true) {
+            System.out.println("\n1. Create Account");
+            System.out.println("2. Search Account");
+            System.out.println("3. Add Money");
+            System.out.println("4. Withdraw Money");
+            System.out.println("5. Balance Enquiry");
+            System.out.println("6. Edit Address");
+            System.out.println("7. Get All Account Details");
+            System.out.println("8. Exit");
+            System.out.print("Enter option: ");
+
+            int choice = sc.nextInt();
+            sc.nextLine(); // Consume the newline character
+
+            switch (choice) {
+                case 1:
+                    createAccount(sc);
+                    break;
+
+                case 2:
+                    searchAccount(sc);
+                    break;
+
+                case 3:
+                    addMoney(sc);
+                    break;
+
+                case 4:
+                    withdrawMoney(sc);
+                    break;
+
+                case 5:
+                    balanceEnquiry(sc);
+                    break;
+
+                case 6:
+                    editAddress(sc);
+                    break;
+
+                case 7:
+                    getAllAccountDetails();
+                    break;
+
+                case 8:
+                    System.out.println("Exiting...Have a Nice Day");
+                    System.exit(0);
+
+                default:
+                    System.out.println("Invalid option");
+                    break;
+            }
+        }
+    }
+
+    private static void getAllAccountDetails() {
+        System.out.println("\nAll Account Details:");
+        for (int i = 0; i < accountCount; i++) {
+            System.out.println(accounts[i]);
+        }
+    }
+
+    private static void createAccount(Scanner sc) {
+        System.out.print("Enter name: ");
+        String name = sc.nextLine();
+
+        System.out.print("Enter mobile number: ");
+        String mobileNumber = sc.nextLine();
+
+        System.out.print("Enter address: ");
+        String address = sc.nextLine();
+
+        System.out.print("Enter date of birth (YYYY-MM-DD): ");
+        String dob = sc.nextLine();
+
+        System.out.print("Enter Aadhar number: ");
+        String aadharNumber = sc.nextLine();
+
+        if (calculateAge(dob) < 18) {
+            System.out.println("Your not pexrmitted to create an account for the age <18");
+            return;
+        }
+
+        BankAccount account = new BankAccount(name, mobileNumber, address, dob, aadharNumber);
+        accounts[accountCount++] = account;
+        System.out.println("Account created successfully && Account Number: " + account.getAccountNumber());
+    }
+
+    private static void searchAccount(Scanner scanner) {
+        System.out.print("Enter account number to search: ");
+        int accountNumber = scanner.nextInt();
+
+        BankAccount account = getAccount(accountNumber);
+        if (account != null) {
+            System.out.println("Account found: " + account);
+        } else {
+            System.out.println("Account number not found");
+        }
+    }
+
+    private static BankAccount getAccount(int accountNumber) {
+        for (int i = 0; i < accountCount; i++) {
+            if (accounts[i] != null && accounts[i].getAccountNumber() == accountNumber) {
+                return accounts[i];
+            }
+        }
+        return null;
+    }
+
+    private static void addMoney(Scanner scanner) {
+        System.out.print("Enter account number to add money: ");
+        int accountNumber = scanner.nextInt();
+
+        BankAccount account = getAccount(accountNumber);
+        if (account != null) {
+            System.out.print("Enter amount to add: ");
+            double amount = scanner.nextDouble();
+            if (amount <= 0 || amount == 11) {
+                System.out.println("You cannot add Rs "+ amount +" into the account: "+account.getAccountNumber());
+                return;
+            }
+            account.addMoney(amount);
+            System.out.println("Amount Rs "+account.getBalance()+" added successfully into the account :"+account.getAccountNumber());
+        } else {
+            System.out.println("Account not found with the Given Account Number: "+account.getAccountNumber());
+        }
+    }
+
+    private static void withdrawMoney(Scanner scanner) {
+        System.out.print("Enter account number to withdraw money: ");
+        int accountNumber = scanner.nextInt();
+
+        BankAccount account = getAccount(accountNumber);
+        if (account != null) {
+            System.out.print("Enter amount to withdraw: ");
+            double amount = scanner.nextDouble();
+            if (amount <= 0 || amount == 0 || account.getBalance() - amount < 0) {
+                System.out.println("Insufficient balance in the account :"+account.getAccountNumber());
+                return;
+            }
+            account.withdrawMoney(amount);
+            System.out.println("Amount Rs "+ account.getBalance() +" debited from the account: "+account.getAccountNumber());
+        } else {
+            System.out.println("Insufficeient bal in the account :"+account.getAccountNumber());
+        }
+    }
+
+    private static void balanceEnquiry(Scanner scanner) {
+        System.out.print("Enter account number to check balance: ");
+        int accountNumber = scanner.nextInt();
+
+        BankAccount account = getAccount(accountNumber);
+        if (account != null) {
+            System.out.println("Current balance: " + account.getBalance()+" in the account: "+account.getAccountNumber());
+        } else {
+            System.out.println("Account not found with the Given Account Number: "+account.getAccountNumber());
+        }
+    }
+
+    private static void editAddress(Scanner scanner) {
+        System.out.print("Enter account number to edit address: ");
+        int accountNumber = scanner.nextInt();
+
+        BankAccount account = getAccount(accountNumber);
+        if (account != null) {
+            System.out.print("Enter new address: ");
+            scanner.nextLine(); // Consume the newline character
+            String newAddress = scanner.nextLine();
+            account.editAddress(newAddress);
+            System.out.println("New Address updated successfully: " + account.getAddress()+" to the account "+account.getAccountNumber());
+        } else {
+            System.out.println("Account not found.");
+        }
+    }
+
+    private static int calculateAge(String dob) {
+        int birthYear = Integer.parseInt(dob.substring(0, 4));
+        int currentYear = java.time.Year.now().getValue();
+        return currentYear - birthYear;
+    }
+}
+
+class BankAccount {
+    private final int accountNumber;
+    private final String name;
+    private final String mobileNumber;
+    private String address;
+    private final String dob;
+    private final String aadharNumber;
+    private double balance;
+
+    public BankAccount(String name, String mobileNumber, String address, String dob, String aadharNumber) {
+        this.accountNumber = generateAccountNumber();
+        this.name = name;
+        this.mobileNumber = mobileNumber;
+        this.address = address;
+        this.dob = dob;
+        this.aadharNumber = aadharNumber;
+        this.balance = 0;
+    }
+
+    public int generateAccountNumber() {
+    	Random random= new Random();
+        return 100000+ random.nextInt(900000);
+    }
+
+    public int getAccountNumber() {
+        return accountNumber;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public void addMoney(double amount) {
+        balance += amount;
+    }
+
+    public void withdrawMoney(double amount) {
+        balance -= amount;
+    }
+
+    public void editAddress(String newAddress) {
+        address = newAddress;
+    }
+
+    @Override
+    public String toString() {
+        return "BankAccount{" +
+                "accountNumber=" + accountNumber +
+                ", name='" + name + '\'' +
+                ", mobileNumber='" + mobileNumber + '\'' +
+                ", address='" + address + '\'' +
+                ", dob='" + dob + '\'' +
+                ", aadharNumber='" + aadharNumber + '\'' +
+                ", balance=" + balance +
+                '}';
+    }
+}
